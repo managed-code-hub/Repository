@@ -350,7 +350,7 @@ namespace ManagedCode.Repository.AzureTable
 
         private Task WaitRandom(CancellationToken token)
         {
-            return Task.Delay(new Random().Next(750, 3500), token);
+            return Task.Delay(new Random().Next(1000, 3500), token);
         }
     }
 }

@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Repository.Core
 {
@@ -21,6 +20,19 @@ namespace ManagedCode.Repository.Core
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
             return Task.CompletedTask;
+        }
+
+        protected override ValueTask DisposeAsyncInternal()
+        {
+            return new(Task.Run(DisposeInternal));
+        }
+
+        protected override void DisposeInternal()
+        {
+            lock (_storage)
+            {
+                _storage.Clear();
+            }
         }
 
         #region Insert
@@ -468,18 +480,5 @@ namespace ManagedCode.Repository.Core
         }
 
         #endregion
-        
-        protected override ValueTask DisposeAsyncInternal()
-        {
-            return new ValueTask(Task.Run(DisposeInternal));
-        }
-
-        protected override void DisposeInternal()
-        {
-            lock (_storage)
-            {
-                _storage.Clear();
-            }
-        }
     }
 }

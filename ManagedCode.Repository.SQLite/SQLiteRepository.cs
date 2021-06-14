@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCode.Repository.Core;
-using Microsoft.Extensions.Logging;
 using SQLite;
 
 namespace ManagedCode.Repository.SQLite
@@ -27,6 +26,15 @@ namespace ManagedCode.Repository.SQLite
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
             return Task.CompletedTask;
+        }
+
+        protected override ValueTask DisposeAsyncInternal()
+        {
+            return new(Task.CompletedTask);
+        }
+
+        protected override void DisposeInternal()
+        {
         }
 
         #region Insert
@@ -387,15 +395,5 @@ namespace ManagedCode.Repository.SQLite
         }
 
         #endregion
-        
-        protected override ValueTask DisposeAsyncInternal()
-        {
-            return new ValueTask(Task.CompletedTask);
-        }
-
-        protected override void DisposeInternal()
-        {
-            
-        }
     }
 }

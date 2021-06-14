@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using LiteDB;
 using ManagedCode.Repository.Core;
-using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Repository.LiteDB
 {
@@ -32,6 +31,15 @@ namespace ManagedCode.Repository.LiteDB
             return Task.CompletedTask;
         }
 
+        protected override ValueTask DisposeAsyncInternal()
+        {
+            return new(Task.CompletedTask);
+        }
+
+        protected override void DisposeInternal()
+        {
+        }
+
         #region Insert
 
         protected override async Task<TItem> InsertAsyncInternal(TItem item, CancellationToken token = default)
@@ -54,12 +62,8 @@ namespace ManagedCode.Repository.LiteDB
         protected override async Task<TItem> InsertOrUpdateAsyncInternal(TItem item, CancellationToken token = default)
         {
             await Task.Yield();
-            if (GetDatabase().Upsert(item))
-            {
-                return GetDatabase().FindById(new BsonValue(item.Id));
-            }
-
-            return default;
+            GetDatabase().Upsert(item);
+            return GetDatabase().FindById(new BsonValue(item.Id));
         }
 
         protected override async Task<int> InsertOrUpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
@@ -380,15 +384,5 @@ namespace ManagedCode.Repository.LiteDB
         }
 
         #endregion
-        
-        protected override ValueTask DisposeAsyncInternal()
-        {
-            return new ValueTask(Task.CompletedTask);
-        }
-
-        protected override void DisposeInternal()
-        {
-            
-        }
     }
 }

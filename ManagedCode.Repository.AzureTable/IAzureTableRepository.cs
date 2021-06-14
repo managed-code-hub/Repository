@@ -5,5 +5,6 @@ namespace ManagedCode.Repository.AzureTable
 {
     public interface IAzureTableRepository<T> : IRepository<TableId, T>
         where T : class, IItem<TableId>, ITableEntity, new()
-    {}
+    {
+    }
 }

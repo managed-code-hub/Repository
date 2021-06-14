@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Humanizer;
 using ManagedCode.Repository.Core;
-using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -18,12 +17,12 @@ namespace ManagedCode.Repository.MongoDB
         where TItem : class, IItem<ObjectId>
     {
         private readonly IMongoCollection<TItem> _collection;
-        
+
         public MongoDbRepository([NotNull] MongoDbRepositoryOptions options)
         {
             var client = new MongoClient(options.ConnectionString);
             var database = client.GetDatabase(options.DataBaseName);
-            string collectionName = string.IsNullOrEmpty(options.CollectionName) ? typeof(TItem).Name.Pluralize() : options.CollectionName;
+            var collectionName = string.IsNullOrEmpty(options.CollectionName) ? typeof(TItem).Name.Pluralize() : options.CollectionName;
             _collection = database.GetCollection<TItem>(collectionName, new MongoCollectionSettings());
             IsInitialized = true;
         }
@@ -31,6 +30,15 @@ namespace ManagedCode.Repository.MongoDB
         protected override Task InitializeAsyncInternal(CancellationToken token = default)
         {
             return Task.CompletedTask;
+        }
+
+        protected override ValueTask DisposeAsyncInternal()
+        {
+            return new(Task.CompletedTask);
+        }
+
+        protected override void DisposeInternal()
+        {
         }
 
         #region Insert
@@ -55,15 +63,15 @@ namespace ManagedCode.Repository.MongoDB
         {
             var result = await _collection.ReplaceOneAsync(w => w.Id == item.Id, item, new ReplaceOptions
             {
-                IsUpsert = true,
+                IsUpsert = true
             }, token);
-            
+
             return item;
         }
 
         protected override async Task<int> InsertOrUpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
-            int count = 0;
+            var count = 0;
             foreach (var item in items)
             {
                 await InsertOrUpdateAsyncInternal(item, token);
@@ -85,7 +93,7 @@ namespace ManagedCode.Repository.MongoDB
 
         protected override async Task<int> UpdateAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
-            int count = 0;
+            var count = 0;
             foreach (var item in items)
             {
                 await UpdateAsyncInternal(item, token);
@@ -113,11 +121,13 @@ namespace ManagedCode.Repository.MongoDB
 
         protected override async Task<int> DeleteAsyncInternal(IEnumerable<ObjectId> ids, CancellationToken token = default)
         {
-            int count = 0;
+            var count = 0;
             foreach (var item in ids)
             {
                 if (await DeleteAsyncInternal(item, token))
+                {
                     count++;
+                }
             }
 
             return count;
@@ -125,11 +135,13 @@ namespace ManagedCode.Repository.MongoDB
 
         protected override async Task<int> DeleteAsyncInternal(IEnumerable<TItem> items, CancellationToken token = default)
         {
-            int count = 0;
+            var count = 0;
             foreach (var item in items)
             {
                 if (await DeleteAsyncInternal(item, token))
+                {
                     count++;
+                }
             }
 
             return count;
@@ -143,7 +155,7 @@ namespace ManagedCode.Repository.MongoDB
 
         protected override async Task<bool> DeleteAllAsyncInternal(CancellationToken token = default)
         {
-            var result = await _collection.DeleteManyAsync<TItem>(w => true, token);
+            var result = await _collection.DeleteManyAsync(w => true, token);
             return result.DeletedCount > 0;
         }
 
@@ -198,7 +210,7 @@ namespace ManagedCode.Repository.MongoDB
             }
             else
             {
-                query.OrderByDescending(orderBy);
+                query = query.OrderByDescending(orderBy);
             }
 
             if (take != null)
@@ -242,15 +254,30 @@ namespace ManagedCode.Repository.MongoDB
             {
                 query = query.Where(predicate);
             }
-
-            foreach (var item in await Task.Run(() => query.Skip(skip).ToArray(), token))
+            
+            if (take != null)
             {
-                if (token.IsCancellationRequested)
+                foreach (var item in await Task.Run(() => query.Skip(skip).Take(take.Value).ToArray(), token))
                 {
-                    break;
-                }
+                    if (token.IsCancellationRequested)
+                    {
+                        break;
+                    }
 
-                yield return item;
+                    yield return item;
+                }
+            }
+            else
+            {
+                foreach (var item in await Task.Run(() => query.Skip(skip).ToArray(), token))
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    yield return item;
+                }
             }
         }
 
@@ -274,7 +301,7 @@ namespace ManagedCode.Repository.MongoDB
             }
             else
             {
-                query.OrderByDescending(orderBy);
+                query = query.OrderByDescending(orderBy);
             }
 
             if (take != null)
@@ -325,7 +352,7 @@ namespace ManagedCode.Repository.MongoDB
             }
             else
             {
-                query.OrderByDescending(orderBy);
+                query = query.OrderByDescending(orderBy);
             }
 
             if (thenType == Order.By)
@@ -334,7 +361,7 @@ namespace ManagedCode.Repository.MongoDB
             }
             else
             {
-                query.OrderByDescending(thenBy);
+                query = query.OrderByDescending(thenBy);
             }
 
             if (take != null)
@@ -375,15 +402,5 @@ namespace ManagedCode.Repository.MongoDB
         }
 
         #endregion
-        
-        protected override ValueTask DisposeAsyncInternal()
-        {
-            return new ValueTask(Task.CompletedTask);
-        }
-
-        protected override void DisposeInternal()
-        {
-            
-        }
     }
 }

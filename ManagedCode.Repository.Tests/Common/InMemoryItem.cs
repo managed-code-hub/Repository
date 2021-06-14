@@ -1,10 +1,13 @@
-using ManagedCode.Repository.Core;
+using System;
 
 namespace ManagedCode.Repository.Tests.Common
 {
-    public class InMemoryItem : IItem<int>
+    public class InMemoryItem : IBaseItem<int>
     {
-        public string Data { get; set; }
         public int Id { get; set; }
+        public string StringData { get; set; }
+        public int IntData { get; set; }
+        public float FloatData { get; set; }
+        public DateTime DateTimeData { get; set; }
     }
 }

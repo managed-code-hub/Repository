@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using ManagedCode.Repository.Core;
 using Microsoft.Azure.Cosmos.Table;
-using Microsoft.Extensions.Logging;
 
 namespace ManagedCode.Repository.AzureTable
 {

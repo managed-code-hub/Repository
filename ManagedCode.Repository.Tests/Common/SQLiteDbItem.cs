@@ -1,16 +1,16 @@
-using ManagedCode.Repository.Core;
+using System;
 using SQLite;
 
 namespace ManagedCode.Repository.Tests.Common
 {
-    public class SQLiteDbItem : IItem<int>
+    public class SQLiteDbItem : IBaseItem<int>
     {
-        public string PartKey { get; set; }
-        public string Data { get; set; }
-        public string RowKey { get; set; }
-        public int IntData { get; set; }
-
         [PrimaryKey]
         public int Id { get; set; }
+
+        public string StringData { get; set; }
+        public int IntData { get; set; }
+        public float FloatData { get; set; }
+        public DateTime DateTimeData { get; set; }
     }
 }

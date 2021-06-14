@@ -1,25 +1,13 @@
-using ManagedCode.Repository.MongoDB;
+using System;
+using ManagedCode.Repository.CosmosDB;
 
 namespace ManagedCode.Repository.Tests.Common
 {
-    public class TestCosmosDbItem : CosmosDB.CosmosDbItem
+    public class TestCosmosDbItem : CosmosDbItem, IBaseItem<string>
     {
-        public TestCosmosDbItem()
-        {
-        }
-
-        public TestCosmosDbItem(string id) : base(id)
-        {
-        }
-
-        public TestCosmosDbItem(string id, string partKey) : base(id)
-        {
-            PartKey = partKey;
-        }
-
-        public string PartKey { get; set; }
-        public string Data { get; set; }
-        public string RowKey { get; set; }
+        public string StringData { get; set; }
         public int IntData { get; set; }
+        public float FloatData { get; set; }
+        public DateTime DateTimeData { get; set; }
     }
 }

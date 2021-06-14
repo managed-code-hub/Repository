@@ -3,21 +3,16 @@ using ManagedCode.Repository.LiteDB;
 
 namespace ManagedCode.Repository.Tests.Common
 {
-    public class TestLiteDbItem : LiteDbItem<string>
+    public class TestLiteDbItem : LiteDbItem<string>, IBaseItem<string>
     {
         public TestLiteDbItem()
         {
             Id = Guid.NewGuid().ToString();
         }
 
-        public TestLiteDbItem(string id)
-        {
-            Id = id;
-        }
-
-        public string PartKey { get; set; }
-        public string Data { get; set; }
-        public string RowKey { get; set; }
+        public string StringData { get; set; }
         public int IntData { get; set; }
+        public float FloatData { get; set; }
+        public DateTime DateTimeData { get; set; }
     }
 }

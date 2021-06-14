@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,9 +13,7 @@ namespace ManagedCode.Repository.Core
     {
         protected readonly ILogger Logger = NullLogger.Instance;
 
-        protected BaseRepository()
-        {
-        }
+        private bool _disposed;
 
         public bool IsInitialized { get; protected set; }
 
@@ -28,7 +25,32 @@ namespace ManagedCode.Repository.Core
             }
         }
 
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            DisposeInternal();
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            if (_disposed)
+            {
+                return new ValueTask(Task.CompletedTask);
+            }
+
+            _disposed = true;
+            return DisposeAsyncInternal();
+        }
+
         protected abstract Task InitializeAsyncInternal(CancellationToken token = default);
+
+        protected abstract ValueTask DisposeAsyncInternal();
+        protected abstract void DisposeInternal();
 
         #region Insert
 
@@ -508,7 +530,6 @@ namespace ManagedCode.Repository.Core
                 throw new RepositoryNotInitializedException(GetType());
             }
 
-            Contract.Requires(predicates != null);
             return FindAsyncInternal(predicates, take, skip, token);
         }
 
@@ -724,27 +745,5 @@ namespace ManagedCode.Repository.Core
         protected abstract Task<int> CountAsyncInternal(IEnumerable<Expression<Func<TItem, bool>>> predicates, CancellationToken token = default);
 
         #endregion
-
-        private bool _disposed;
-        public void Dispose()
-        {
-            if(_disposed)
-                return;
-            
-            _disposed = true;
-            DisposeInternal();
-        }
-        
-        public ValueTask DisposeAsync()
-        {
-            if(_disposed)
-                return new ValueTask(Task.CompletedTask);
-            
-            _disposed = true;
-            return DisposeAsyncInternal();
-        }
-        
-        protected abstract ValueTask DisposeAsyncInternal();
-        protected abstract void DisposeInternal();
     }
 }

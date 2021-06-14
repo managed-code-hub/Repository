@@ -1,7 +1,6 @@
 using ManagedCode.Repository.Core;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using Newtonsoft.Json;
 
 namespace ManagedCode.Repository.MongoDB
 {
